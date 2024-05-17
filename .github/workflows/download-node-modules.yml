@@ -15,14 +15,24 @@ jobs:
       with:
         node-version: '14.15.0'  # O la versión que necesites
 
-    - name: Install dependencies
-      run: npm install
+    - name: Cache Yarn dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.yarn/cache
+          node_modules
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
 
-    - name: Zip node_modules
-      run: zip -r node_modules.zip node_modules
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Zip node_modules, package-lock.json, and yarn.lock
+      run: zip -r project-dependencies.zip node_modules package-lock.json yarn.lock
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: node_modules-zip
-        path: node_modules.zip
+        name: project-dependencies
+        path: project-dependencies.zip
